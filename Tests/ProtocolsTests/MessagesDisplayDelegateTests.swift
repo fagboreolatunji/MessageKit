@@ -1,7 +1,7 @@
 /*
  MIT License
 
- Copyright (c) 2017-2018 MessageKit
+ Copyright (c) 2017-2019 MessageKit
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -50,19 +50,19 @@ class MessagesDisplayDelegateTests: XCTestCase {
         XCTAssertEqual(sut.backgroundColor(for: sut.dataProvider.messages[0],
                                            at: IndexPath(item: 0, section: 0),
                                            in: sut.messagesCollectionView),
-                       UIColor.outgoingGreen)
+                       UIColor.outgoingMessageBackground)
         XCTAssertNotEqual(sut.backgroundColor(for: sut.dataProvider.messages[0],
                                               at: IndexPath(item: 0, section: 0),
                                               in: sut.messagesCollectionView),
-                          UIColor.incomingGray)
+                          UIColor.incomingMessageBackground)
         XCTAssertEqual(sut.backgroundColor(for: sut.dataProvider.messages[1],
                                            at: IndexPath(item: 1, section: 0),
                                            in: sut.messagesCollectionView),
-                       UIColor.incomingGray)
+                       UIColor.incomingMessageBackground)
         XCTAssertNotEqual(sut.backgroundColor(for: sut.dataProvider.messages[1],
                                               at: IndexPath(item: 1, section: 0),
                                               in: sut.messagesCollectionView),
-                          UIColor.outgoingGreen)
+                          UIColor.outgoingMessageBackground)
     }
 
     func testBackgroundColorWithoutDataSource_returnsWhiteForDefault() {
@@ -71,12 +71,12 @@ class MessagesDisplayDelegateTests: XCTestCase {
                                                   at: IndexPath(item: 0, section: 0),
                                                   in: sut.messagesCollectionView)
 
-        XCTAssertEqual(backgroundColor, .white)
+        XCTAssertEqual(backgroundColor, UIColor.white)
     }
 
     func testBackgroundColorForMessageWithEmoji_returnsClearForDefault() {
         sut.dataProvider.messages.append(MockMessage(emoji: "🤔",
-                                                     sender: sut.dataProvider.currentSender(),
+                                                     user: sut.dataProvider.currentUser,
                                                      messageId: "003"))
         let backgroundColor = sut.backgroundColor(for: sut.dataProvider.messages[2],
                                                   at: IndexPath(item: 0, section: 0),
@@ -90,8 +90,8 @@ class MessagesDisplayDelegateTests: XCTestCase {
                                                                  at: IndexPath(item: 0, section: 0)))
     }
 
-    func testCellBottomLabelDefaultState() {
-        XCTAssertNil(sut.dataProvider.cellBottomLabelAttributedText(for: sut.dataProvider.messages[0],
+    func testMessageBottomLabelDefaultState() {
+        XCTAssertNil(sut.dataProvider.messageBottomLabelAttributedText(for: sut.dataProvider.messages[0],
                                                                     at: IndexPath(item: 0, section: 0)))
     }
 
@@ -111,67 +111,10 @@ class MessagesDisplayDelegateTests: XCTestCase {
         XCTAssertTrue(result)
     }
 
-    func testShouldDisplayHeaderWithoutDataSource_returnsFalseForDefault() {
-        sut.messagesCollectionView.messagesDataSource = nil
-
-        XCTAssertFalse(sut.shouldDisplayHeader(for: sut.dataProvider.messages[0],
-                                               at: IndexPath(item: 0, section: 0),
-                                               in: sut.messagesCollectionView))
-    }
-
-    func testShouldDisplayHeaderForFirstMessage_returnsFalseForDefault() {
-        XCTAssertFalse(sut.shouldDisplayHeader(for: sut.dataProvider.messages[0],
-                                               at: IndexPath(item: 0, section: 0),
-                                               in: sut.messagesCollectionView))
-    }
-
-    func testShouldDisplayHeaderForMessageWithTimeIntervalSinceLastMessageGreatherThanScheduled_returnsTrue() {
-        var message = MockMessage(text: "Test", sender: sut.dataProvider.currentSender(), messageId: "003")
-        let scheduledInterval = sut.messagesCollectionView.showsDateHeaderAfterTimeInterval
-        message.sentDate = Date(timeIntervalSinceNow: scheduledInterval + 300)
-        sut.dataProvider.messages.append(message)
-
-        XCTAssertTrue(sut.shouldDisplayHeader(for: sut.dataProvider.messages[2],
-                                              at: IndexPath(item: 0, section: 1),
-                                              in: sut.messagesCollectionView))
-    }
-
-    func testShouldDisplayHeaderForMessageWithTimeIntervalSinceLastMessageEqualThanScheduled_returnsTrue() {
-        var message = MockMessage(text: "Test", sender: sut.dataProvider.currentSender(), messageId: "003")
-        let scheduledInterval = sut.messagesCollectionView.showsDateHeaderAfterTimeInterval
-        message.sentDate = Date(timeIntervalSinceNow: scheduledInterval)
-        sut.dataProvider.messages.append(message)
-
-        XCTAssertTrue(sut.shouldDisplayHeader(for: sut.dataProvider.messages[2],
-                                              at: IndexPath(item: 0, section: 1),
-                                              in: sut.messagesCollectionView))
-    }
-
-    func testShouldDisplayHeaderForMessageWithTimeIntervalSinceLastMessageLessThanScheduled_returnsFalse() {
-        var message = MockMessage(text: "Test", sender: sut.dataProvider.currentSender(), messageId: "003")
-        let scheduledInterval = sut.messagesCollectionView.showsDateHeaderAfterTimeInterval
-        message.sentDate = Date(timeIntervalSinceNow: scheduledInterval - 300)
-        sut.dataProvider.messages.append(message)
-
-        XCTAssertFalse(sut.shouldDisplayHeader(for: sut.dataProvider.messages[2],
-                                               at: IndexPath(item: 0, section: 1),
-                                               in: sut.messagesCollectionView))
-    }
-
     func testMessageHeaderView_isNotNil() {
-        let headerView = sut.messageHeaderView(for: sut.dataProvider.messages[1],
-                                               at: IndexPath(item: 0, section: 1),
-                                               in: sut.messagesCollectionView)
-
+        let indexPath = IndexPath(item: 0, section: 1)
+        let headerView = sut.messageHeaderView(for: indexPath, in: sut.messagesCollectionView)
         XCTAssertNotNil(headerView)
-    }
-
-    func testMessageFooterView_isNotNil() {
-        let footerView = sut.messageFooterView(for: sut.dataProvider.messages[1],
-                                               at: IndexPath(item: 0, section: 1),
-                                               in: sut.messagesCollectionView)
-
-        XCTAssertNotNil(footerView)
     }
 
 }
@@ -200,7 +143,7 @@ class TextMessageDisplayDelegateTests: XCTestCase {
                                       at: IndexPath(item: 0, section: 0),
                                       in: sut.messagesCollectionView)
 
-        XCTAssertEqual(textColor, .white)
+        XCTAssertEqual(textColor, UIColor.outgoingMessageLabel)
     }
 
     func testTextColorFromYou_returnsDarkTextForDefault() {
@@ -208,7 +151,7 @@ class TextMessageDisplayDelegateTests: XCTestCase {
                                       at: IndexPath(item: 0, section: 0),
                                       in: sut.messagesCollectionView)
 
-        XCTAssertEqual(textColor, .darkText)
+        XCTAssertEqual(textColor, UIColor.incomingMessageLabel)
     }
 
     func testTextColorWithoutDataSource_returnsDarkTextForDefault() {
@@ -218,7 +161,7 @@ class TextMessageDisplayDelegateTests: XCTestCase {
                                       at: IndexPath(item: 0, section: 0),
                                       in: sut.messagesCollectionView)
 
-        XCTAssertEqual(textColor, .darkText)
+        XCTAssertEqual(textColor, UIColor.incomingMessageLabel)
     }
 
     func testEnableDetectors_returnsEmptyForDefault() {
@@ -253,10 +196,10 @@ private class MockMessagesViewController: MessagesViewController, MessagesDispla
     fileprivate func makeDataSource() -> MockMessagesDataSource {
         let dataSource = MockMessagesDataSource()
         dataSource.messages.append(MockMessage(text: "Text 1",
-                                               sender: dataSource.senders[0],
+                                               user: dataSource.senders[0],
                                                messageId: "001"))
         dataSource.messages.append(MockMessage(text: "Text 2",
-                                               sender: dataSource.senders[1],
+                                               user: dataSource.senders[1],
                                                messageId: "002"))
 
         return dataSource

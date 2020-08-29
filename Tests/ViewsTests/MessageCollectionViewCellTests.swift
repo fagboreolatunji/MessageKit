@@ -1,7 +1,7 @@
 /*
  MIT License
  
- Copyright (c) 2017-2018 MessageKit
+ Copyright (c) 2017-2019 MessageKit
  
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,14 @@
 import XCTest
 @testable import MessageKit
 
-class MessageCollectionViewCellTests: XCTestCase {
+final class MessageContentCellTests: XCTestCase {
 
-    var cell: MessageCollectionViewCell!
+    var cell: MessageContentCell!
     let frame = CGRect(x: 0, y: 0, width: 100, height: 100)
 
     override func setUp() {
         super.setUp()
-        cell = MessageCollectionViewCell(frame: frame)
+        cell = MessageContentCell(frame: frame)
     }
 
     override func tearDown() {
@@ -43,7 +43,7 @@ class MessageCollectionViewCellTests: XCTestCase {
     func testInit() {
         XCTAssertEqual(cell.contentView.autoresizingMask, [.flexibleWidth, .flexibleHeight])
         XCTAssert(cell.contentView.subviews.contains(cell.cellTopLabel))
-        XCTAssert(cell.contentView.subviews.contains(cell.cellBottomLabel))
+        XCTAssert(cell.contentView.subviews.contains(cell.messageBottomLabel))
         XCTAssert(cell.contentView.subviews.contains(cell.avatarView))
         XCTAssert(cell.contentView.subviews.contains(cell.messageContainerView))
 
@@ -58,23 +58,24 @@ class MessageCollectionViewCellTests: XCTestCase {
         cell.prepareForReuse()
         XCTAssertNil(cell.cellTopLabel.text)
         XCTAssertNil(cell.cellTopLabel.attributedText)
-        XCTAssertNil(cell.cellBottomLabel.text)
-        XCTAssertNil(cell.cellBottomLabel.attributedText)
+        XCTAssertNil(cell.messageBottomLabel.text)
+        XCTAssertNil(cell.messageBottomLabel.attributedText)
     }
 
     func testApplyLayoutAttributes() {
         let layoutAttributes = MessagesCollectionViewLayoutAttributes()
+        layoutAttributes.avatarPosition = AvatarPosition(horizontal: .cellLeading, vertical: .cellBottom)
         cell.apply(layoutAttributes)
 
         XCTAssertEqual(cell.avatarView.frame, layoutAttributes.frame)
-        XCTAssertEqual(cell.messageContainerView.frame, layoutAttributes.messageContainerFrame)
-        XCTAssertEqual(cell.cellTopLabel.frame, layoutAttributes.topLabelFrame)
-        XCTAssertEqual(cell.cellBottomLabel.frame, layoutAttributes.bottomLabelFrame)
+        XCTAssertEqual(cell.messageContainerView.frame.size, layoutAttributes.messageContainerSize)
+        XCTAssertEqual(cell.cellTopLabel.frame.size, layoutAttributes.cellTopLabelSize)
+        XCTAssertEqual(cell.messageBottomLabel.frame.size, layoutAttributes.messageBottomLabelSize)
     }
 
 }
 
-extension MessageCollectionViewCellTests {
+extension MessageContentCellTests {
 
     fileprivate class MockMessagesDisplayDelegate: MessagesDisplayDelegate {
         

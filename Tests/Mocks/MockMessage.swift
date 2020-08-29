@@ -1,7 +1,7 @@
 /*
  MIT License
 
- Copyright (c) 2017-2018 MessageKit
+ Copyright (c) 2017-2019 MessageKit
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -24,44 +24,109 @@
 
 import Foundation
 import CoreLocation
+import AVFoundation
+@testable import MessageKit
+
+struct MockLocationItem: LocationItem {
+
+    var location: CLLocation
+    var size: CGSize
+
+    init(location: CLLocation) {
+        self.location = location
+        self.size = CGSize(width: 240, height: 240)
+    }
+
+}
+
+struct MockMediaItem: MediaItem {
+
+    var url: URL?
+    var image: UIImage?
+    var placeholderImage: UIImage
+    var size: CGSize
+
+    init(image: UIImage) {
+        self.image = image
+        self.size = CGSize(width: 240, height: 240)
+        self.placeholderImage = UIImage()
+    }
+
+}
+
+private struct MockAudiotem: AudioItem {
+
+    var url: URL
+    var size: CGSize
+    var duration: Float
+
+    init(url: URL, duration: Float) {
+        self.url = url
+        self.size = CGSize(width: 160, height: 35)
+        self.duration = duration
+    }
+
+}
+
+struct MockLinkItem: LinkItem {
+    let text: String?
+    let attributedText: NSAttributedString?
+    let url: URL
+    let title: String?
+    let teaser: String
+    let thumbnailImage: UIImage
+}
 
 struct MockMessage: MessageType {
 
     var messageId: String
-    var sender: Sender
+    var sender: SenderType {
+        return user
+    }
     var sentDate: Date
-    var data: MessageData
+    var kind: MessageKind
+    var user: MockUser
 
-    private init(data: MessageData, sender: Sender, messageId: String) {
-        self.data = data
-        self.sender = sender
+    private init(kind: MessageKind, user: MockUser, messageId: String) {
+        self.kind = kind
+        self.user = user
         self.messageId = messageId
         self.sentDate = Date()
     }
 
-    init(text: String, sender: Sender, messageId: String) {
-        self.init(data: .text(text), sender: sender, messageId: messageId)
+    init(text: String, user: MockUser, messageId: String) {
+        self.init(kind: .text(text), user: user, messageId: messageId)
     }
 
-    init(attributedText: NSAttributedString, sender: Sender, messageId: String) {
-        self.init(data: .attributedText(attributedText), sender: sender, messageId: messageId)
+    init(attributedText: NSAttributedString, user: MockUser, messageId: String) {
+        self.init(kind: .attributedText(attributedText), user: user, messageId: messageId)
     }
 
-    init(image: UIImage, sender: Sender, messageId: String) {
-        self.init(data: .photo(image), sender: sender, messageId: messageId)
+    init(image: UIImage, user: MockUser, messageId: String) {
+        let mediaItem = MockMediaItem(image: image)
+        self.init(kind: .photo(mediaItem), user: user, messageId: messageId)
     }
 
-    init(thumbnail: UIImage, sender: Sender, messageId: String) {
-        let url = URL(fileURLWithPath: "")
-        self.init(data: .video(file: url, thumbnail: thumbnail), sender: sender, messageId: messageId)
+    init(thumbnail: UIImage, user: MockUser, messageId: String) {
+        let mediaItem = MockMediaItem(image: thumbnail)
+        self.init(kind: .video(mediaItem), user: user, messageId: messageId)
     }
 
-    init(location: CLLocation, sender: Sender, messageId: String) {
-        self.init(data: .location(location), sender: sender, messageId: messageId)
+    init(location: CLLocation, user: MockUser, messageId: String) {
+        let locationItem = MockLocationItem(location: location)
+        self.init(kind: .location(locationItem), user: user, messageId: messageId)
     }
 
-    init(emoji: String, sender: Sender, messageId: String) {
-        self.init(data: .emoji(emoji), sender: sender, messageId: messageId)
+    init(emoji: String, user: MockUser, messageId: String) {
+        self.init(kind: .emoji(emoji), user: user, messageId: messageId)
     }
 
+    init(audioURL: URL, duration: Float, user: MockUser, messageId: String) {
+        let audioItem = MockAudiotem(url: audioURL, duration: duration)
+        self.init(kind: .audio(audioItem), user: user, messageId: messageId)
+    }
+
+    init(linkItem: LinkItem, user: MockUser, messageId: String) {
+        self.init(kind: .linkPreview(linkItem), user: user, messageId: messageId)
+    }
 }

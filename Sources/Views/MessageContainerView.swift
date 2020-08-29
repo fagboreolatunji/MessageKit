@@ -1,7 +1,7 @@
 /*
  MIT License
 
- Copyright (c) 2017-2018 MessageKit
+ Copyright (c) 2017-2019 MessageKit
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -48,10 +48,8 @@ open class MessageContainerView: UIImageView {
         switch style {
         case .none, .custom:
             break
-        case .bubble, .bubbleTail:
+        case .bubble, .bubbleTail, .bubbleOutline, .bubbleTailOutline:
             imageMask.frame = bounds
-        case .bubbleOutline, .bubbleTailOutline:
-            imageMask.frame = bounds.insetBy(dx: 1.0, dy: 1.0)
         }
     }
 
@@ -70,11 +68,11 @@ open class MessageContainerView: UIImageView {
             image = style.image?.withRenderingMode(.alwaysTemplate)
             tintColor = color
         case .bubbleTailOutline(let color, let tail, let corner):
-            let bubbleStyle: MessageStyle = .bubbleTailOutline(.white, tail, corner)
+            let bubbleStyle: MessageStyle = .bubbleTail(tail, corner)
             imageMask.image = bubbleStyle.image
             sizeMaskToView()
             mask = imageMask
-            image = style.image
+            image = style.image?.withRenderingMode(.alwaysTemplate)
             tintColor = color
         case .none:
             mask = nil
